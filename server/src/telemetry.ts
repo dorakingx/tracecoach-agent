@@ -7,14 +7,17 @@ import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 let sdk: NodeSDK | undefined;
 
 export function startTelemetry() {
-  const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+  const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || process.env.PHOENIX_COLLECTOR_ENDPOINT;
   if (!endpoint) {
     return;
   }
 
   const headers: Record<string, string> = {};
   if (process.env.PHOENIX_API_KEY) {
-    headers.api_key = process.env.PHOENIX_API_KEY;
+    headers.authorization = `Bearer ${process.env.PHOENIX_API_KEY}`;
+  }
+  if (process.env.PHOENIX_PROJECT_NAME) {
+    headers["x-project-name"] = process.env.PHOENIX_PROJECT_NAME;
   }
 
   sdk = new NodeSDK({

@@ -49,6 +49,7 @@ For Phoenix Cloud, use the Phoenix OTLP trace endpoint and API key:
 
 ```bash
 OTEL_EXPORTER_OTLP_ENDPOINT=https://app.phoenix.arize.com/v1/traces
+PHOENIX_PROJECT_NAME=tracecoach-agent
 PHOENIX_API_KEY=your-phoenix-key
 ```
 
