@@ -46,6 +46,14 @@ type AgentRun = {
 const sampleGoal =
   "A production support agent gave a vague incident answer. Diagnose the missing evidence, produce a safer action plan, and improve the next run using trace evaluations.";
 
+const recordingCaptions = [
+  "Live Gemini run: the agent plans and acts from a real mission.",
+  "Phoenix OTLP is enabled: every step is exported as trace spans.",
+  "The agent evaluates actionability, trace groundedness, goal fit, and tool efficiency.",
+  "Self-improvement memo: failed or weak spans become the next prompt experiment.",
+  "Observed spans: agent.plan -> agent.execute_tools -> phoenix.evaluate_trace -> phoenix.mcp_self_introspection."
+];
+
 function scoreColor(score: number) {
   if (score >= 0.9) return "var(--green)";
   if (score >= 0.8) return "var(--blue)";
@@ -59,6 +67,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [health, setHealth] = useState<{ geminiConfigured: boolean; telemetryConfigured: boolean } | null>(null);
+  const [recordingCaptionIndex, setRecordingCaptionIndex] = useState(0);
   const isRecording = new URLSearchParams(window.location.search).get("recording") === "1";
 
   const avgScore = useMemo(() => {
@@ -121,6 +130,16 @@ function App() {
     return () => scrolls.forEach(window.clearTimeout);
   }, [isRecording, run]);
 
+  useEffect(() => {
+    if (!isRecording) return;
+
+    const interval = window.setInterval(() => {
+      setRecordingCaptionIndex((index) => Math.min(index + 1, recordingCaptions.length - 1));
+    }, 15000);
+
+    return () => window.clearInterval(interval);
+  }, [isRecording]);
+
   return (
     <main className={`app-shell ${isRecording ? "recording-mode" : ""}`}>
       {isRecording && (
@@ -129,6 +148,12 @@ function App() {
           <span>Gemini: {health?.geminiConfigured ? "connected" : "checking"}</span>
           <span>Phoenix OTLP: {health?.telemetryConfigured ? "exporting traces" : "checking"}</span>
           <span>{run ? "Self-improvement memo generated" : loading ? "Running observed loop" : "Starting"}</span>
+        </div>
+      )}
+      {isRecording && (
+        <div className="recording-caption">
+          <span>{recordingCaptionIndex + 1}/5</span>
+          <strong>{recordingCaptions[recordingCaptionIndex]}</strong>
         </div>
       )}
       <section className="workspace">
