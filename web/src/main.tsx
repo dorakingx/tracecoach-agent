@@ -122,7 +122,7 @@ function App() {
   }, [isRecording, run]);
 
   return (
-    <main className="app-shell">
+    <main className={`app-shell ${isRecording ? "recording-mode" : ""}`}>
       {isRecording && (
         <div className="recording-banner">
           <strong>TraceCoach live demo</strong>
@@ -189,6 +189,26 @@ function App() {
             <EmptyState onStart={() => void startRun()} />
           ) : (
             <div className="result-grid">
+              {isRecording && (
+                <section className="recording-summary">
+                  <div>
+                    <strong>Phoenix evaluations</strong>
+                    <p>
+                      {run.evaluations
+                        .map((item) => `${item.label} ${(item.score * 100).toFixed(0)}`)
+                        .join(" · ")}
+                    </p>
+                  </div>
+                  <div>
+                    <strong>Self-improvement memo</strong>
+                    <p>{run.selfImprovement.replace(/\s+/g, " ").slice(0, 260)}</p>
+                  </div>
+                  <div>
+                    <strong>Observed spans</strong>
+                    <p>{run.spans.map((span) => span.name).join(" → ")}</p>
+                  </div>
+                </section>
+              )}
               <section className="panel wide">
                 <div className="panel-title">
                   <Brain size={18} />
