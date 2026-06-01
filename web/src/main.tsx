@@ -109,6 +109,18 @@ function App() {
     return () => window.clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (!isRecording || !run) return;
+
+    const scrolls = [
+      window.setTimeout(() => window.scrollTo({ top: 360, behavior: "smooth" }), 4500),
+      window.setTimeout(() => window.scrollTo({ top: 760, behavior: "smooth" }), 9500),
+      window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 16500)
+    ];
+
+    return () => scrolls.forEach(window.clearTimeout);
+  }, [isRecording, run]);
+
   return (
     <main className="app-shell">
       {isRecording && (
