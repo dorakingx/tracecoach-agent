@@ -37,7 +37,7 @@ For live Gemini mode, set:
 
 ```bash
 GOOGLE_API_KEY=your-google-api-key
-GEMINI_MODEL=gemini-3-pro
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 Then switch the UI to `Gemini live`.
@@ -98,7 +98,7 @@ gcloud run deploy tracecoach-agent \
   --source . \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars GEMINI_MODEL=gemini-3-pro \
+  --set-env-vars GEMINI_MODEL=gemini-2.5-flash \
   --set-secrets GOOGLE_API_KEY=GOOGLE_API_KEY:latest,PHOENIX_API_KEY=PHOENIX_API_KEY:latest
 ```
 
