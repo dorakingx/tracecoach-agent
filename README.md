@@ -5,7 +5,7 @@ It demonstrates an agent that does more than answer: it acts with Gemini, emits
 Phoenix-compatible traces, evaluates its own run, and writes a targeted prompt
 improvement memo from the observed spans.
 
-Live demo: <https://tracecoach-agent-602964828967.asia-northeast1.run.app>
+Live demo: <https://tracecoach-agent-hskfubefuq-an.a.run.app>
 
 ## Why this can win
 
