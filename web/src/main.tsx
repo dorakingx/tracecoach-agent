@@ -1,4 +1,4 @@
-import { StrictMode, useMemo, useState } from "react";
+import { StrictMode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   Activity,
@@ -58,13 +58,15 @@ function App() {
   const [run, setRun] = useState<AgentRun | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [health, setHealth] = useState<{ geminiConfigured: boolean; telemetryConfigured: boolean } | null>(null);
+  const isRecording = new URLSearchParams(window.location.search).get("recording") === "1";
 
   const avgScore = useMemo(() => {
     if (!run?.evaluations.length) return 0;
     return run.evaluations.reduce((sum, item) => sum + item.score, 0) / run.evaluations.length;
   }, [run]);
 
-  async function startRun() {
+  async function startRun(nextGoal = goal, nextMode = mode) {
     setLoading(true);
     setError("");
 
@@ -72,7 +74,7 @@ function App() {
       const response = await fetch("/api/run", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ goal, mode })
+        body: JSON.stringify({ goal: nextGoal, mode: nextMode })
       });
       const payload = await response.json();
       if (!response.ok) {
@@ -86,8 +88,37 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    fetch("/api/health")
+      .then((response) => response.json())
+      .then(setHealth)
+      .catch(() => setHealth(null));
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const autoplay = params.get("autoplay");
+    if (autoplay !== "live" && autoplay !== "demo") return;
+
+    const nextMode = autoplay;
+    setMode(nextMode);
+    const timer = window.setTimeout(() => {
+      void startRun(sampleGoal, nextMode);
+    }, isRecording ? 1800 : 500);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
   return (
     <main className="app-shell">
+      {isRecording && (
+        <div className="recording-banner">
+          <strong>TraceCoach live demo</strong>
+          <span>Gemini: {health?.geminiConfigured ? "connected" : "checking"}</span>
+          <span>Phoenix OTLP: {health?.telemetryConfigured ? "exporting traces" : "checking"}</span>
+          <span>{run ? "Self-improvement memo generated" : loading ? "Running observed loop" : "Starting"}</span>
+        </div>
+      )}
       <section className="workspace">
         <aside className="control-panel">
           <div className="brand">
@@ -122,7 +153,7 @@ function App() {
             </button>
           </div>
 
-          <button className="run-button" onClick={startRun} disabled={loading}>
+          <button className="run-button" onClick={() => void startRun()} disabled={loading}>
             {loading ? <RefreshCcw className="spin" size={18} /> : <Play size={18} />}
             {loading ? "Running observed loop" : "Run observed loop"}
           </button>
@@ -143,7 +174,7 @@ function App() {
           </div>
 
           {!run ? (
-            <EmptyState onStart={startRun} />
+            <EmptyState onStart={() => void startRun()} />
           ) : (
             <div className="result-grid">
               <section className="panel wide">
